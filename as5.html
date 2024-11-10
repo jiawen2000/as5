@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .section {
+            position: relative;
+            width: 100%;
+            height: 200vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+        }
+
+        .video-section {
+            height: 100vh;
+        }
+
+        .video-container {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .video {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+            color: white;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 4rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- Leading Section -->
+    <section class="section">
+        <div class="content">
+            <h1 class="section-title">Leading Section</h1>
+        </div>
+    </section>
+
+    <!-- First Video Section -->
+    <section class="section video-section" id="video1-section">
+        <div class="video-container">
+            <video class="video" id="video1" muted playsinline>
+                <source src="https://web.cw.com.tw/climate-2020/hsinchu-water/cover.mp4" type="video/mp4">
+            </video>
+        </div>
+    </section>
+
+    <!-- Middle Section -->
+    <section class="section">
+        <div class="content">
+            <h1 class="section-title">Middle Section</h1>
+        </div>
+    </section>
+
+    <!-- Second Video Section -->
+    <section class="section video-section" id="video2-section">
+        <div class="video-container">
+            <video class="video" id="video2" muted playsinline>
+                <source src="https://web.cw.com.tw/climate-2020/landing/cover.mp4" type="video/mp4">
+            </video>
+        </div>
+    </section>
+
+    <!-- Ending Section -->
+    <section class="section">
+        <div class="content">
+            <h1 class="section-title">Ending Section</h1>
+        </div>
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const video1 = $('#video1').get(0);
+            const video2 = $('#video2').get(0);
+            const video1Section = $('#video1-section');
+            const video2Section = $('#video2-section');
+
+            // 預載入影片
+            video1.load();
+            video2.load();
+
+            function isSectionEntering(section) {
+                const rect = section.get(0).getBoundingClientRect();
+                const windowHeight = $(window).height();
+                return rect.top <= windowHeight && rect.top > 0;
+            }
+
+            function isSectionLeaving(section) {
+                const nextSection = section.next();
+                if (nextSection.length) {
+                    const rect = nextSection.get(0).getBoundingClientRect();
+                    const windowHeight = $(window).height();
+                    return rect.top <= windowHeight && rect.top > 0;
+                }
+                return false;
+            }
+
+            function handleVideoScroll(video, section) {
+                if (!video || !section.length) return;
+
+                const sectionTop = section.offset().top;
+                const sectionHeight = section.height();
+                const windowHeight = $(window).height();
+                const scrollPosition = $(window).scrollTop();
+                
+                const startPosition = sectionTop - windowHeight;
+                const relativeScroll = scrollPosition - startPosition;
+
+                if (relativeScroll >= 0 && relativeScroll <= sectionHeight) {
+                    const progress = relativeScroll / sectionHeight;
+                    if (video.duration) {
+                        video.currentTime = video.duration * progress;
+                    }
+                }
+            }
+
+            $(window).scroll(function() {
+                // 處理第一個影片
+                if (isSectionEntering(video1Section) || 
+                    (video1Section.get(0).getBoundingClientRect().top < $(window).height() && 
+                     !isSectionLeaving(video1Section))) {
+                    handleVideoScroll(video1, video1Section);
+                }
+
+                // 處理第二個影片
+                if (isSectionEntering(video2Section) || 
+                    (video2Section.get(0).getBoundingClientRect().top < $(window).height() && 
+                     !isSectionLeaving(video2Section))) {
+                    handleVideoScroll(video2, video2Section);
+                }
+            });
+
+            // 初始檢查
+            $(window).trigger('scroll');
+        });
+    </script>
+</body>
+</html>
